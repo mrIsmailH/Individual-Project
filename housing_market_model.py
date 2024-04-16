@@ -21,7 +21,6 @@ class HousingMarketModel(ap.Model):
         
     def step(self):
         #This method is responsible for modelling the interactions between all agents at each time step
-
         if not self.houses:
             return
 

@@ -1,13 +1,8 @@
-import agentpy as ap
-import random
-from matplotlib.widgets import CheckButtons, RadioButtons, TextBox, Button
+from matplotlib.widgets import CheckButtons, TextBox, Button
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
-from homebuyer import Homebuyer
-from lender import Lender
-from house import House
 from housing_market_model import HousingMarketModel
 
 
@@ -46,7 +41,7 @@ def plot_scatter(successful_buyers, unsuccessful_buyers):
     plt.show()
 
 #This method runs the simulation with a set of parameters
-def run_simulation(parameters, plot_types, save_results):
+def run_simulation(parameters, plot_types, save_results, test_mode=False):
     #Initialize the lists to store the results of successful and unsuccessful buyers
     successful_buyers = []
     unsuccessful_buyers = []
@@ -100,15 +95,31 @@ def run_simulation(parameters, plot_types, save_results):
                 if f'Loan Requests {ltv_limit}' not in writer.sheets:
                     loanrequests_df.to_excel(writer, sheet_name=f'Loan Requests {ltv_limit}')
                     
-        #If the plot type includes Histogram then call the Histogram method from earlier to plot a histogram for wealth distribution at every LTV limit
-        if 'Histogram' in plot_types:
-            plot_histogram([buyer['Wealth'] for buyer in model.successful_buyers], 
-                           [buyer['Wealth'] for buyer in model.unsuccessful_buyers], ltv_limit)
 
-    #If the plot type includes the scatter graph then call the scatter method from earlier to plot buyer accounts for every LTV limit
+        # Only display plots or the user interface if not in test mode
+        if 'Histogram' in plot_types:
+                plot_histogram([buyer['Wealth'] for buyer in model.successful_buyers], 
+                            [buyer['Wealth'] for buyer in model.unsuccessful_buyers], ltv_limit)
     if 'Scatter' in plot_types:
         plot_scatter(successful_buyers, unsuccessful_buyers)
 
+#This method is for testing the simulation itself and not the UI
+def simulate(parameters):
+    successful_buyers = []
+    unsuccessful_buyers = []
+
+    for ltv_limit in np.arange(0.1, 1.01, 0.1):
+        parameters['ltv_limit'] = ltv_limit
+        model = HousingMarketModel(parameters)
+        model.run(24) 
+
+        successful = len(model.successful_buyers)
+        unsuccessful = len(model.unsuccessful_buyers)
+
+        successful_buyers.append((ltv_limit, successful))
+        unsuccessful_buyers.append((ltv_limit, unsuccessful))
+
+    return successful_buyers, unsuccessful_buyers
 
 #User Interface For Policy Maker
 fig, ax = plt.subplots(figsize=(8, 8))
