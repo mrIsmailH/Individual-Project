@@ -1,6 +1,5 @@
 import unittest
-from main import run_simulation  # replace 'your_module' with the actual module name
-
+from main import run_simulation
 class TestMain(unittest.TestCase):
     def setUp(self):
         self.num_buyers = 7
